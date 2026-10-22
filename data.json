@@ -1,0 +1,707 @@
+{
+  "version": 3,
+  "accounts": [
+    {
+      "id": "0fc88727-9e86-48f7-ba38-95de34fba973",
+      "fio": "Гамидов Самир Эльмирович",
+      "login": "samirgamidov",
+      "passHash": "scrypt$b3516104ed672f0294f4e22e5038ad80$bae743595ddb470d162e0f94a163675eac692394d9d09a491c3ae8daf8efa3d2ca1e1d059e9e4932efc1494532d3e4ea7d6b431b30770d19ebeeeeac1de91161",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 0,
+      "dob": "03.06.2009"
+    },
+    {
+      "id": "579120ce-bb40-4cfb-a9b8-d90671f1aca6",
+      "fio": "Родионова Полина Алексеевна",
+      "login": "velvet.exe27",
+      "passHash": "scrypt$1cb656234146eb50d60a4a46900002b1$b9d74209ffec38a09820477d1056e494c7aef5ee145c1773ac109c4729d62f41a63375ecea5c9c5de1d3da13cb159c1f8bb9a054760c40b3aa103b9104949c35",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 1,
+      "dob": "24.04.2009"
+    },
+    {
+      "id": "e46c73e9-d97f-4e0d-9cf0-83e844f25416",
+      "fio": "аня фефилова юрьевна",
+      "login": "www",
+      "passHash": "scrypt$f3bc24353079f3d7c83316ba4fc9656b$8ebaebc226308ae05f01cbad60735b9a13e86017cf67b25f955df69187b2d4326140082c60d5c9e1af374a12d8d7532e07dc3b0e3ab390cbdef00c648bf19a4e",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 2,
+      "dob": "18.02.2009"
+    },
+    {
+      "id": "45eab25b-d2b6-4d88-978f-c848f57e6156",
+      "fio": "Постригань Арсений Андреевич",
+      "login": "senya_avito57",
+      "passHash": "scrypt$8b3635a433a9df16a10a378756298820$4b7f64e2fdad8092ca91da128e8d1b947a2525f403a98eaeb4c0d600b05bbe4338dbe1d18c64361c9f589b071b2af1f2f4318909a0960a85aee5a2a58e53ff75",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 3,
+      "dob": "25.05.2009"
+    },
+    {
+      "id": "bd20ec5e-f10e-4f61-aff1-23e293169c87",
+      "fio": "Квасова Анастасия Александровна",
+      "login": "anastasia",
+      "passHash": "scrypt$694ba167dccd84a0a28f410b6b3bc5a6$5352d8f973e4baed496243d9db48de9c8fc07e3ad2b5e4af970600c8201437c865600ea14311ee76d5f8b89e564b836b1638c5490c2e79f94c540bd0e7aed757",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 4,
+      "dob": "21.01.2009"
+    },
+    {
+      "id": "e4db4721-0026-4f4b-82f0-3a3fab64bf27",
+      "fio": "Блант Арина Арменовна",
+      "login": "bblaantttt",
+      "passHash": "scrypt$1a44653c8a8c46262146b66c3eb990cc$ce1c0cd65d2c618708f63b1137f1d89ef0d1681049899c8b9afd7d7965afdf2ad4c5fb52d0a22910fb30e30820b35f3f5a50bf6c370887bde25fab58f2862822",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 5,
+      "dob": "27.02.2010"
+    },
+    {
+      "id": "42e90c6c-0edc-4d1f-bc16-043a3a9a2107",
+      "fio": "Малашкова Валерия Андреевна",
+      "login": "valeria2109",
+      "passHash": "scrypt$3edc0d80016e65e15a921ef583bbe2a5$5855f39a34c4daafe1a4f3a72d6394c70e94511beb681d2f3cc89316965ec545af120da35c677ada166a8832f8a98463f09ea9282b65986428ab4866e66c860b",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 6,
+      "dob": "21.04.2009"
+    },
+    {
+      "id": "07181c7a-184f-4184-bc83-69391b960d1e",
+      "fio": "Ильина Дарья Александровна",
+      "login": "marsiwey",
+      "passHash": "scrypt$50d4e660bb05aaff0a0a3ee922a758ec$94f5620a144cf673642b2bffa5ab4cb433fe11417b6b742713af8339a5f5aafc5503208322e57b429183433a282967538a38189d3b7da3fd0bc1bc2a744a6927",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 7,
+      "dob": "01.06.2009"
+    },
+    {
+      "id": "6e551575-a17a-4c4e-9a6c-deaa9cb6f108",
+      "fio": "Горковенко Алиса Константиновна",
+      "login": "alisa_sss3120",
+      "passHash": "scrypt$d19f5c135188ee89f9ccac12005705a3$94e91c92d74405ef2f01c96508fd7ab1a67e83fd37026533676c03e771c895e875faaf7bfebc91f0190092c86e930e5bdfc6d294bc4cb2b81def3dc7d940aae5",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 8,
+      "dob": "31.01.2010"
+    },
+    {
+      "id": "fe7089d4-6e50-40c4-baec-62c23801098c",
+      "fio": "Чирик Дарья Вячеславовна",
+      "login": "dashachirik28",
+      "passHash": "scrypt$ca62ddd2b12cff31afe78488e7fbde35$5ac1048e3f05c9cd48671708284b43e25b8df4eeccfe5b93dd6fd1e2572bae6175ec34948fd5db05c7517905f9a7911fe5dc45d4317337ede127d30ebd8fd23e",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 9,
+      "dob": "28.11.2009"
+    },
+    {
+      "id": "13ae2058-c063-42b5-b39e-911d97b7c8e7",
+      "fio": "Скворцова Анастасия Владимировна",
+      "login": "nathan0o0",
+      "passHash": "scrypt$d1187933a309bc2d60569879979d0619$876ba2affa650e4f43f3ee8f35a3bc6c8656561b2d713bff1f7d92f1e570d3998052c9f5322a27f6dc4f77a62e55e9d2cb2d577522fff52578526edad7b45033",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 10,
+      "dob": "19.01.2009"
+    },
+    {
+      "id": "d125b0b6-2c6f-4acc-b85f-b2c49c1cc977",
+      "fio": "Андреевская София Сергеевна",
+      "login": "sofia2009q",
+      "passHash": "scrypt$2a998f28d161299c03fea8a1de5c1250$d089133f6a8292ef1b981f4d4a8cf793806c43456ff950399dc2c717f9853cbdb8c3e915c6824b722571595658519c7a303bbfd4065dcda8ed3904f946e9a8e4",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 11,
+      "dob": "01.08.2009"
+    },
+    {
+      "id": "developer",
+      "fio": "Разработчик",
+      "login": "arcsiz",
+      "passHash": "scrypt$6e552e385114b8bda8043061b3501aee$9b4fcc2bab6909950eb3ea9f929d9d3d1ff00d642d83db560716296abc25907b52456627561686a6357b3453e61d111b29904b340b1f64498bbcf9f73006bb2d",
+      "role": "dev",
+      "subj": "",
+      "group": "",
+      "studentIndex": null
+    },
+    {
+      "id": "020c99b3-209d-4603-a6e8-88d28bb22562",
+      "fio": "Селецкая Екатерина Леонидовна",
+      "login": "ekaterinaleonidovna",
+      "passHash": "scrypt$0e3570033ec3738f55712ccff31eaf5f$7d3e772e4430a79b7691dd1fd7c4136a9ef12f9b4aeaa1ec97dab6fbd78b50745aa585fa9d83b5f13b38f223efd7aba598357117ac1394d43340d815b552b1f2",
+      "role": "curator",
+      "subj": "",
+      "group": "02-ЛД-26-О",
+      "studentIndex": null
+    },
+    {
+      "id": "aa316085-8543-4bbf-892a-758e4140316e",
+      "fio": "Бенетт Елизавета Денисовна",
+      "login": "body.bildeeer",
+      "passHash": "scrypt$7951a4af8b7ec96496d6af1cd1447ae9$853e7d4b3180f8c11fdd63eb3d50d476136ec5da6a7cf79b96149b31be9b67b490d25514305b1c1f290fbcdc8451096c97e8ed526f966a4e79efb12102bda97c",
+      "role": "student",
+      "subj": "",
+      "group": "02-СД-25-о",
+      "studentIndex": 13,
+      "dob": "30.08.2007"
+    }
+  ],
+  "sessions": {
+    "ef97f13afff92a5bc2cd9bfa35750de4fcb26dc3e8fc6e27053113fa36546ee7": {
+      "login": "arcsiz",
+      "expires": 1795257562506
+    },
+    "134c25e8c1e4efac9c798343e663f84240809d879a85799c7fb0d415702a9021": {
+      "login": "velvet.exe27",
+      "expires": 1793212264676
+    },
+    "d91de8fcf7869fd270ba50cdb918085e8410a3add5b68b9d1e7677d350050f3d": {
+      "login": "www",
+      "expires": 1793214532082
+    },
+    "e4312af78daf98a2e68303397e3d34dcf3550f29c5c0951ccea977ee2ce3128c": {
+      "login": "samirgamidov",
+      "expires": 1793217066366
+    },
+    "344279b10273d4912c33888ece99d4cd4b1226230d0e8e4b91731150029dd744": {
+      "login": "senya_avito57",
+      "expires": 1795247039477
+    },
+    "ff255a00798c77c1e7192c95f216afb3eec7471a180ecf4810fba687e00e2ede": {
+      "login": "anastasia",
+      "expires": 1795246740424
+    },
+    "7e3feef6131b04ded49e45154311db52f3381e0539cf25c69fdb3e5235c17b10": {
+      "login": "bblaantttt",
+      "expires": 1795242780454
+    },
+    "1d7d50fbfd18fd72045ed6f2e445b8f8da01a33665693178c37ff99585bab98a": {
+      "login": "valeria2109",
+      "expires": 1793224480713
+    },
+    "cba7a06765198dbe7c37325d0c7e9a08bf2933258449706f6d3b5c4af25c78ac": {
+      "login": "arcsiz",
+      "expires": 1793244851364
+    },
+    "c2543184e6c45fce63f2138503bbe6f2aaeba14ff020441b51b2dfa9a74314c6": {
+      "login": "arcsiz",
+      "expires": 1793244945483
+    },
+    "a3be2b7ae754beeb9a99c7e1bcaf5d37e194ce7ee4e104dd4309c02552739161": {
+      "login": "samirgamidov",
+      "expires": 1793244980447
+    },
+    "8da1a255c219058c82b56655cdc8d191e8b1142cb5ac40770595ce9b34725fe9": {
+      "login": "marsiwey",
+      "expires": 1793247462624
+    },
+    "fe4e05928ba34e6ad0c44c07f23b216ab3c7611b948dfd76b4c6a87721481b87": {
+      "login": "arcsiz",
+      "expires": 1793249438336
+    },
+    "f75605fea09efd99074a3a8918f095a73e67e4ec640d27f566c594cb29addf69": {
+      "login": "samirgamidov",
+      "expires": 1793250574535
+    },
+    "cfe6ae6a9b1f2c69a5228bcef8028ec8e9eb32525c653fabb21020d796f7ab95": {
+      "login": "samirgamidov",
+      "expires": 1793251935895
+    },
+    "32ebfb11a82f1eeaf129a5b669c7d31c75e6624f348b1180d0793c9aa4dced75": {
+      "login": "samirgamidov",
+      "expires": 1793253459641
+    },
+    "2c34644cf68cd187b15d59f5a2328b4c338981697ca464be020e3119c843dc98": {
+      "login": "alisa_sss3120",
+      "expires": 1793253707280
+    },
+    "416d5322924a2cae49f78e51f4ffada250e432b53d779eb90f3d411652505b49": {
+      "login": "alisa_sss3120",
+      "expires": 1793253898984
+    },
+    "25570dcae6955f70e39e49598ea03353b67b7ec665801ebf006e274ce1fdb6e6": {
+      "login": "velvet.exe27",
+      "expires": 1795242701282
+    },
+    "de3bdf34539a28d22a37cc14f0c30f2c36395ef3b7cd932edb77bdf94a4a66f6": {
+      "login": "dashachirik28",
+      "expires": 1795242835479
+    },
+    "a5a20e2ee6529fdb94135ec4e1e45fb7a567223fda5d4f42f038be0e095ff7d7": {
+      "login": "bblaantttt",
+      "expires": 1795242914184
+    },
+    "7cef46d2d0adab338bf58ba24d14379409c2e004bcd462df884fb96e854457b9": {
+      "login": "dashachirik28",
+      "expires": 1795242942282
+    },
+    "400c4426ab7b433f498b64b6c1462b5c5939b61c661de70a1c2cbd6216433fa7": {
+      "login": "nathan0o0",
+      "expires": 1795246347232
+    },
+    "854ccdf6ee060e337090906b373321caac263076fad73c644672ba1b95f113b7": {
+      "login": "sofia2009q",
+      "expires": 1795249163051
+    },
+    "235eea99c87baa7c6e182e477e6266c5fc5a74de1a7532770af2f895f14bf219": {
+      "login": "arcsiz",
+      "expires": 1795250612613
+    },
+    "b6d31f4cf1e92c9976d9c9944157379857c178db273d6157485d825a62ffaf32": {
+      "login": "anastasia",
+      "expires": 1795255702937
+    },
+    "719ede4c84e990a1011b7ef41b07814fa57ae7602e9202de5636e2c5100e0bb0": {
+      "login": "body.bildeeer",
+      "expires": 1795256579499
+    }
+  },
+  "students": [
+    "Гамидов Самир",
+    "Родионова Полина",
+    "аня фефилова",
+    "Постригань Арсений",
+    "Квасова Анастасия",
+    "Блант Арина",
+    "Малашкова Валерия",
+    "Ильина Дарья",
+    "Горковенко Алиса",
+    "Чирик Дарья",
+    "Скворцова Анастасия",
+    "Андреевская София",
+    "Kzksksj Dkkkdkd",
+    "Бенетт Елизавета"
+  ],
+  "times": {
+    "1": [
+      540,
+      630
+    ],
+    "2": [
+      645,
+      735
+    ],
+    "3": [
+      780,
+      870
+    ],
+    "4": [
+      885,
+      970
+    ],
+    "5": [
+      980,
+      1070
+    ]
+  },
+  "grades": {
+    "3:12:5": 5,
+    "2:3:1": 5,
+    "2:1:1": 5
+  },
+  "att": {},
+  "hw": {
+    "3:2": {
+      "text": "Шарики за ролики 🛼",
+      "due": "",
+      "src": "Выдано преподавателем",
+      "by": "Разработчик",
+      "byRole": "dev",
+      "updatedAt": "2026-10-21T19:04:05.974Z"
+    },
+    "14:3": {
+      "text": "выучить тему с 21 октября наизусть, будут спрашивать по одному!\nклинические проявления \nс помощью какого метода? диагностики определяется \nесть ли лечение и какой прогноз?\n(это надо написать там где мы оставляли место в тетради)",
+      "due": "",
+      "src": "Выдано преподавателем",
+      "by": "Разработчик",
+      "byRole": "dev",
+      "updatedAt": "2026-10-22T02:40:55.141Z"
+    }
+  },
+  "ev": {
+    "3": []
+  },
+  "sch": [
+    {
+      "wd": "Понедельник",
+      "s": "Пн",
+      "lessons": [
+        {
+          "n": 3,
+          "type": "prac",
+          "title": "Генетика с основами медицинской генетики",
+          "teacher": "Селецкая Е.Л.",
+          "room": "105",
+          "place": "УАК"
+        },
+        {
+          "n": 4,
+          "type": "prac",
+          "title": "Основы микробиологии и иммунологии",
+          "teacher": "Светогор А.А.",
+          "room": "УП",
+          "place": "МООД"
+        },
+        {
+          "n": 5,
+          "type": "prac",
+          "title": "История России",
+          "teacher": "Филиппова А.М.",
+          "room": "135",
+          "place": "УАК"
+        }
+      ]
+    },
+    {
+      "wd": "Вторник",
+      "s": "Вт",
+      "lessons": [
+        {
+          "n": 2,
+          "type": "prac",
+          "title": "Иностранный язык в профессиональной деятельности",
+          "teacher": "Демина И.А.",
+          "room": "322",
+          "place": "УАК"
+        },
+        {
+          "n": 3,
+          "type": "lec",
+          "title": "Основы финансовой грамотности",
+          "teacher": "Косорученко Т.В.",
+          "room": "135",
+          "place": "УАК"
+        }
+      ]
+    },
+    {
+      "wd": "Среда",
+      "s": "Ср",
+      "lessons": [
+        {
+          "n": 1,
+          "type": "lec",
+          "title": "Анатомия и физиология человека",
+          "teacher": "Селецкая Е.Л.",
+          "room": "105",
+          "place": "УАК"
+        },
+        {
+          "n": 2,
+          "type": "lec",
+          "title": "Генетика с основами медицинской генетики",
+          "teacher": "Селецкая Е.Л.",
+          "room": "335",
+          "place": "УАК"
+        },
+        {
+          "n": 3,
+          "type": "prac",
+          "title": "Анатомия и физиология человека",
+          "teacher": "Селецкая Е.Л.",
+          "room": "105",
+          "place": "УАК"
+        },
+        {
+          "n": 4,
+          "type": "prac",
+          "title": "Физическая культура",
+          "teacher": "Андриянова Е.Р.",
+          "room": "спорт.зал",
+          "place": "УСК"
+        }
+      ]
+    },
+    {
+      "wd": "Четверг",
+      "s": "Чт",
+      "lessons": [
+        {
+          "n": 1,
+          "type": "prac",
+          "title": "Анатомия и физиология человека",
+          "teacher": "Селецкая Е.Л.",
+          "room": "105",
+          "place": "УАК"
+        },
+        {
+          "n": 2,
+          "type": "lec",
+          "title": "Безопасность жизнедеятельности",
+          "teacher": "Семикова М.В.",
+          "room": "341",
+          "place": "УАК"
+        },
+        {
+          "n": 3,
+          "type": "prac",
+          "title": "Основы финансовой грамотности",
+          "teacher": "Косорученко Т.В.",
+          "room": "335",
+          "place": "УАК"
+        }
+      ]
+    },
+    {
+      "wd": "Пятница",
+      "s": "Пт",
+      "lessons": [
+        {
+          "n": 2,
+          "type": "prac",
+          "title": "Русский язык и культура речи",
+          "teacher": "Вакансия Л.",
+          "room": "335",
+          "place": "УАК"
+        },
+        {
+          "n": 3,
+          "type": "prac",
+          "title": "Основы латинского языка с медицинской терминологией",
+          "teacher": "Дикусар В.В.",
+          "room": "105",
+          "place": "УАК"
+        },
+        {
+          "n": 4,
+          "type": "prac",
+          "title": "Безопасность жизнедеятельности",
+          "teacher": "Семикова М.В.",
+          "room": "335",
+          "place": "УАК"
+        }
+      ]
+    },
+    {
+      "wd": "Суббота",
+      "s": "Сб",
+      "lessons": []
+    },
+    {
+      "wd": "Воскресенье",
+      "s": "Вс",
+      "lessons": []
+    }
+  ],
+  "updatedAt": "2026-10-22T08:08:10.097Z",
+  "push": {
+    "subs": {
+      "4391d2a52343bd806e80ced175bd7d71": {
+        "id": "4391d2a52343bd806e80ced175bd7d71",
+        "login": "velvet.exe27",
+        "endpoint": "https://web.push.apple.com/QOhWwRnkEU-U1FOrtKzmGueDM6Anja5sk4UsFJTcEmxlSsbyHobZffmOTMKhX8R1VIG4_znLPeyK7lIASGqDbNE19D9lfBX0lrIk4pKrrC-VMfCnM855gG9KjIh5O7KJVQIVms9iUz4APlGj6dSIojY2VdkFT9AkxUqVgzj8b0w",
+        "createdAt": "2026-10-22T06:07:29.933Z",
+        "queue": [
+          {
+            "id": "4065fcf9-ba39-4c6c-aa83-c0b60a97b544",
+            "ts": 1792658065245,
+            "url": "/diary.html",
+            "title": "Через 26 мин: Анатомия и физиология человека",
+            "body": "1 пара · 09:00 · каб. 105 · УАК"
+          },
+          {
+            "id": "edb548f2-7441-485b-9e2f-1e98f2907b9a",
+            "ts": 1792658397800,
+            "url": "/diary.html",
+            "title": "Через 21 мин: Анатомия и физиология человека",
+            "body": "1 пара · 09:00 · каб. 105 · УАК"
+          }
+        ]
+      },
+      "1b05418bcdcb64482f4376ea07f6c3c6": {
+        "id": "1b05418bcdcb64482f4376ea07f6c3c6",
+        "login": "bblaantttt",
+        "endpoint": "https://web.push.apple.com/QN6JEn68_HyRZM_TyTvG43DqQ-Qol5PKQc463E0zbd4reVcwd80tjrVexZtT7wGIDaCmRPNGP1toEzw_kYT5sGD5uPMWJwHEmXn0gdhLi2IMW_tmgB7VDgADma2ZSmYTtz0Cq-iSzlsdBDI0wV0dro73Gzcx6VykSXOIJuezUyw",
+        "createdAt": "2026-10-22T06:36:12.594Z",
+        "queue": []
+      },
+      "d4ea4b0911650917dac649a648cec3b7": {
+        "id": "d4ea4b0911650917dac649a648cec3b7",
+        "login": "dashachirik28",
+        "endpoint": "https://web.push.apple.com/QPPFStjvHlL65IQ2k1akU6Lka5dVX_mhYhJ3iS8_UG7AfB-V9Oe9VU3fxnR8MRow4ROSYM1jKSqcFYT6OReFzQxLOD9LkRPj-AOU6QFv9j5o6Px-NPiJvoAIl_YTmAangfoJt_b8EWvHN6bQw4xFpaFG6sIsm-BUFTL23vlCGlw",
+        "createdAt": "2026-10-22T06:36:21.908Z",
+        "queue": [
+          {
+            "id": "b9c9e410-5cf0-4e8c-b957-50c6e2054321",
+            "ts": 1792658397975,
+            "url": "/diary.html",
+            "title": "Через 21 мин: Анатомия и физиология человека",
+            "body": "1 пара · 09:00 · каб. 105 · УАК"
+          }
+        ]
+      },
+      "25f15f93379edb2e45e4e9b7c4a9c428": {
+        "id": "25f15f93379edb2e45e4e9b7c4a9c428",
+        "login": "anastasia",
+        "endpoint": "https://fcm.googleapis.com/fcm/send/e-RC1n4LadI:APA91bH2aUc4Vho6oXcqyAab6OdX5UdsNmZyEg1cQFKbUY6LO9Tq7JQ7W5x87JD6ULXyvEAw-sWLT7E5laHMHpHewzsBYwgeqKrnJjwwYbd6nX12eJ8lybFuldxWD5BAofhe6Bs0Lj8e",
+        "createdAt": "2026-10-22T07:40:24.035Z",
+        "queue": []
+      },
+      "f1efed1d6132f67cdd26264aede126d0": {
+        "id": "f1efed1d6132f67cdd26264aede126d0",
+        "login": "arcsiz",
+        "endpoint": "https://fcm.googleapis.com/fcm/send/cKWoQppmRqk:APA91bHyW-LV0NuiUtxl7Qs1mXJ3Gqg4KXRoqapps6iWGHGkZ_43KfrJK6FyS8hqx7-3SQTCVJOgZPjRm6TCXU3Vc4pDC3aFlfNUcjGKEmyfglW_vlMdPrztJVxifV9tMtJ854CuUR2H",
+        "createdAt": "2026-10-22T08:44:07.532Z",
+        "queue": []
+      }
+    },
+    "prefs": {
+      "samirgamidov": {
+        "schedule": true,
+        "grades": true,
+        "hw": true,
+        "events": true,
+        "quiet": true,
+        "remind": 10
+      },
+      "velvet.exe27": {
+        "schedule": true,
+        "grades": true,
+        "hw": true,
+        "events": false,
+        "quiet": true,
+        "remind": 30
+      },
+      "bblaantttt": {
+        "schedule": true,
+        "grades": true,
+        "hw": true,
+        "events": false,
+        "quiet": false,
+        "remind": 30
+      },
+      "anastasia": {
+        "schedule": true,
+        "grades": true,
+        "hw": true,
+        "events": false,
+        "quiet": false,
+        "remind": 0
+      }
+    },
+    "held": {},
+    "vapid": {
+      "publicKey": "BDm54sYkp6leVEFaic_dCqb99bW34twHLSVPD4wMMr8HtpNTLXX8OHZt31Ih7fq3NCnlxPV559rtdr4Dk0tg2Zk",
+      "privateJwk": {
+        "kty": "EC",
+        "x": "ObnixiSnqV5UQVqJz90Kpv31tbfi3ActJU8PjAwyvwc",
+        "y": "tpNTLXX8OHZt31Ih7fq3NCnlxPV559rtdr4Dk0tg2Zk",
+        "crv": "P-256",
+        "d": "NNIkvwd6alAJhgd1vLtjl2bhEbfST5ajTxuOJ8-sPzg"
+      }
+    }
+  },
+  "groups": [
+    {
+      "id": "02-СД-25-о",
+      "name": "02-СД-25-о",
+      "specialty": "Сестринское дело",
+      "course": 2,
+      "curatorLogin": "",
+      "starostaLogin": "",
+      "schedule": [
+        {
+          "wd": "Понедельник",
+          "s": "Пн",
+          "lessons": []
+        },
+        {
+          "wd": "Вторник",
+          "s": "Вт",
+          "lessons": []
+        },
+        {
+          "wd": "Среда",
+          "s": "Ср",
+          "lessons": []
+        },
+        {
+          "wd": "Четверг",
+          "s": "Чт",
+          "lessons": []
+        },
+        {
+          "wd": "Пятница",
+          "s": "Пт",
+          "lessons": []
+        },
+        {
+          "wd": "Суббота",
+          "s": "Сб",
+          "lessons": []
+        },
+        {
+          "wd": "Воскресенье",
+          "s": "Вс",
+          "lessons": []
+        }
+      ],
+      "times": {}
+    },
+    {
+      "id": "02-ЛД-26-О",
+      "name": "02-ЛД-26-О",
+      "specialty": "Лечебное дело",
+      "course": 1,
+      "curatorLogin": "ekaterinaleonidovna",
+      "starostaLogin": "",
+      "schedule": [
+        {
+          "wd": "Понедельник",
+          "s": "Пн",
+          "lessons": []
+        },
+        {
+          "wd": "Вторник",
+          "s": "Вт",
+          "lessons": []
+        },
+        {
+          "wd": "Среда",
+          "s": "Ср",
+          "lessons": []
+        },
+        {
+          "wd": "Четверг",
+          "s": "Чт",
+          "lessons": []
+        },
+        {
+          "wd": "Пятница",
+          "s": "Пт",
+          "lessons": []
+        },
+        {
+          "wd": "Суббота",
+          "s": "Сб",
+          "lessons": []
+        },
+        {
+          "wd": "Воскресенье",
+          "s": "Вс",
+          "lessons": []
+        }
+      ],
+      "times": {}
+    }
+  ]
+}
