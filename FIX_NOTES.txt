@@ -1,0 +1,1 @@
+Fixed empty schedule causing journal crash (wd). Account login still requires original passwords; hashes preserved. Existing persistent database is not overwritten by bundled data.json.

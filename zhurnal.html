@@ -193,7 +193,7 @@ async function pullState(options = {}){
     S.grades=d.grades||{};S.att=d.att||{};S.hw=d.hw||{};
     if(d.times)PAIRS=d.times;
     if(d.start&&/^\d{4}-\d{2}-\d{2}$/.test(d.start)){const[yy,mm,dd]=d.start.split('-').map(Number);SCH_START=new Date(yy,mm-1,dd,12);if(!firstPull){firstPull=true;dayIdx=todayOff()}}
-    if(d.sch){S.sch=d.sch;WEEK.length=0;JSON.parse(JSON.stringify(d.sch)).forEach(x=>WEEK.push({wd:x.wd,s:x.s,lessons:x.lessons||[]}))}
+    if(Array.isArray(d.sch)){S.sch=d.sch;WEEK.length=0;BASE.forEach((fallback,i)=>{const x=d.sch[i]||fallback;WEEK.push({wd:x.wd||fallback.wd,s:x.s||fallback.s,lessons:Array.isArray(x.lessons)?x.lessons:[]})})}
     if(d.ev){Object.keys(EVENTS).forEach(k=>delete EVENTS[k]);Object.assign(EVENTS,d.ev)}
     if(d.replacements)S.replacements=d.replacements;
     if(d.students){STUDENTS.length=0;d.students.forEach(x=>STUDENTS.push(x))}
@@ -211,7 +211,7 @@ let canAtt=false,canSch=false,user=null;
 
 let tab='att', dayIdx=todayOff();
 const tpl=o=>WEEK[((o%7)+7)%7];
-function dayInfo(o){const t=tpl(o),dt=dayDate(o);return{wd:t.wd,s:t.s,day:dt.getDate(),mon:MONTHS[dt.getMonth()],lessons:t.lessons}}
+function dayInfo(o){const t=tpl(o)||BASE[((o%7)+7)%7],dt=dayDate(o);return{wd:t.wd,s:t.s,day:dt.getDate(),mon:MONTHS[dt.getMonth()],lessons:t.lessons||[]}}
 $$('.tab').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;$$('.tab').forEach(x=>x.classList.toggle('on',x===b));render()}));
 function renderDayPick(){
   const base=Math.floor(dayIdx/7)*7, t=todayOff();

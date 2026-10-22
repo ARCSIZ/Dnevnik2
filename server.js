@@ -564,7 +564,7 @@ async function handleApi(req, res, url) {
     const group = DB.groups.find(g => g.id === user.group || g.name === user.group);
     const grades = staff ? DB.grades : Object.fromEntries(Object.entries(DB.grades).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
     const att = staff ? DB.att : Object.fromEntries(Object.entries(DB.att).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
-    return json(res, 200, { replacements: DB.replacements, grades, att, hw: DB.hw, sch: group?.schedule || DB.sch, ev: DB.ev, times: group?.times || DB.times, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students: staff ? DB.students : undefined, revision: DB.updatedAt || null });
+    return json(res, 200, { replacements: DB.replacements, grades, att, hw: DB.hw, sch: (Array.isArray(group?.schedule) && group.schedule.length === 7 ? group.schedule : (Array.isArray(DB.sch) && DB.sch.length === 7 ? DB.sch : DEFAULTS.sch)), ev: DB.ev, times: group?.times || DB.times, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students: staff ? DB.students : undefined, revision: DB.updatedAt || null });
   }
   if (pathname.startsWith('/api/state/') && req.method === 'PUT') {
     const part = pathname.split('/')[3], user = requireAuth(req, res); if (!user) return;
