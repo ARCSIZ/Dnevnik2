@@ -46,17 +46,7 @@
   .tab svg { width:14px;height:14px;flex-shrink:0; }
   .tab.on { color:#fff;background:linear-gradient(135deg,rgba(109,91,255,.9),rgba(168,85,247,.9));box-shadow:0 6px 18px -6px rgba(124,108,255,.6); }
   .tab:active { transform:scale(.96); }
-  .category-nav { display:flex;align-items:center;gap:7px;min-width:0; }
-  .category-scroll { flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:rgba(167,139,250,.5) transparent;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;touch-action:pan-x; }
-  .category-scroll::-webkit-scrollbar { display:block;height:4px; }
-  .category-scroll::-webkit-scrollbar-track { background:rgba(255,255,255,.04);border-radius:99px; }
-  .category-scroll::-webkit-scrollbar-thumb { background:rgba(167,139,250,.45);border-radius:99px; }
-  .category-nav .tabs { width:max-content;min-width:max-content; }
-  .category-nav .tab { flex:0 0 auto; }
-  .cat-arrow { width:34px;height:38px;flex:0 0 34px;border-radius:11px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);color:rgba(255,255,255,.8);cursor:pointer; }
-  .cat-arrow:hover { background:rgba(255,255,255,.1);color:#fff; }
-  .cat-arrow:disabled { opacity:.25;cursor:default; }
-  @media (max-width:420px) { .tab { padding:9px 11px;font-size:12px; } .category-nav { gap:5px; } .cat-arrow { width:30px;flex-basis:30px; } }
+  @media (min-width:600px) { .tab { flex:1; } }
   .day-cell { flex:0 0 auto;width:54px;padding:8px 3px;border-radius:14px;cursor:pointer;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:rgba(255,255,255,.55);text-align:center;transition:all .18s; }
   .day-cell:hover { color:#fff;border-color:rgba(167,139,250,.35);transform:translateY(-2px); }
   .day-cell.on { background:linear-gradient(140deg,#6d5bff,#a855f7);border-color:transparent;color:#fff;box-shadow:0 10px 26px -12px rgba(124,108,255,.7); }
@@ -114,20 +104,14 @@
 </header>
 
 <main class="relative z-10 mx-auto w-full max-w-[760px] px-5 pb-24">
-  <div class="category-nav mt-4 fade-up" aria-label="Категории журнала">
-    <button class="cat-arrow" id="catPrev" type="button" aria-label="Прокрутить категории влево" title="Назад"><i data-lucide="chevron-left" style="width:17px;height:17px"></i></button>
-    <div class="category-scroll" id="categoryScroll" tabindex="0" role="region" aria-label="Категории журнала. Прокручивайте влево и вправо">
-      <div class="tabs" id="tabs">
-        <button class="tab on" data-t="att"><i data-lucide="user-check"></i><span>Посещаемость</span></button>
-        <button class="tab" data-t="progress"><i data-lucide="chart-no-axes-column"></i><span>Оценки и успеваемость</span></button>
-        <button class="tab" data-t="replace"><i data-lucide="repeat"></i><span>Замены</span></button>
-        <button class="tab" data-t="hw"><i data-lucide="book-marked"></i><span>ДЗ</span></button>
-        <button class="tab" data-t="sch"><i data-lucide="calendar-cog"></i><span>Расписание</span></button>
-        <button class="tab" data-t="ev"><i data-lucide="party-popper"></i><span>Мероприятия</span></button>
-        <button class="tab" data-t="time"><i data-lucide="clock"></i><span>Время пар</span></button>
-      </div>
+  <div class="hscroll mt-4 fade-up">
+    <div class="tabs" id="tabs" style="min-width:max-content">
+      <button class="tab on" data-t="att"><i data-lucide="user-check"></i><span>Посещаемость</span></button>
+      <button class="tab" data-t="hw"><i data-lucide="book-marked"></i><span>ДЗ</span></button>
+      <button class="tab" data-t="sch"><i data-lucide="calendar-cog"></i><span>Расписание</span></button>
+      <button class="tab" data-t="ev"><i data-lucide="party-popper"></i><span>Мероприятия</span></button>
+      <button class="tab" data-t="time"><i data-lucide="clock"></i><span>Время пар</span></button>
     </div>
-    <button class="cat-arrow" id="catNext" type="button" aria-label="Прокрутить категории вправо" title="Вперёд"><i data-lucide="chevron-right" style="width:17px;height:17px"></i></button>
   </div>
 
   <div class="glass rounded-2xl p-3 mt-3 fade-up">
@@ -164,7 +148,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const BASE=emptyWeek();
 const STUDENTS=[];
 
-let S={grades:{},att:{},hw:{},replacements:{},sch:null,ev:null,times:null};
+let S={grades:{},att:{},hw:{},sch:null,ev:null,times:null};
 const save=()=>{};
 const persistTimes=()=>api('times',PAIRS);
 
@@ -207,9 +191,8 @@ async function pullState(options = {}){
     S.grades=d.grades||{};S.att=d.att||{};S.hw=d.hw||{};
     if(d.times)PAIRS=d.times;
     if(d.start&&/^\d{4}-\d{2}-\d{2}$/.test(d.start)){const[yy,mm,dd]=d.start.split('-').map(Number);SCH_START=new Date(yy,mm-1,dd,12);if(!firstPull){firstPull=true;dayIdx=todayOff()}}
-    if(Array.isArray(d.sch)){S.sch=d.sch;WEEK.length=0;BASE.forEach((fallback,i)=>{const x=d.sch[i]||fallback;WEEK.push({wd:x.wd||fallback.wd,s:x.s||fallback.s,lessons:Array.isArray(x.lessons)?x.lessons:[]})})}
+    if(d.sch){S.sch=d.sch;WEEK.length=0;JSON.parse(JSON.stringify(d.sch)).forEach(x=>WEEK.push({wd:x.wd,s:x.s,lessons:x.lessons||[]}))}
     if(d.ev){Object.keys(EVENTS).forEach(k=>delete EVENTS[k]);Object.assign(EVENTS,d.ev)}
-    if(d.replacements)S.replacements=d.replacements;
     if(d.students){STUDENTS.length=0;d.students.forEach(x=>STUDENTS.push(x))}
     render();
   }catch(e){toast(e.message||'Ошибка синхронизации','err')}
@@ -225,16 +208,8 @@ let canAtt=false,canSch=false,user=null;
 
 let tab='att', dayIdx=todayOff();
 const tpl=o=>WEEK[((o%7)+7)%7];
-function dayInfo(o){const t=tpl(o)||BASE[((o%7)+7)%7],dt=dayDate(o);return{wd:t.wd,s:t.s,day:dt.getDate(),mon:MONTHS[dt.getMonth()],lessons:t.lessons||[]}}
-const categoryScroll=$('#categoryScroll');
-function updateCategoryArrows(){if(!categoryScroll)return;const max=categoryScroll.scrollWidth-categoryScroll.clientWidth;$('#catPrev').disabled=categoryScroll.scrollLeft<=2;$('#catNext').disabled=categoryScroll.scrollLeft>=max-2;}
-$('#catPrev').addEventListener('click',()=>categoryScroll.scrollBy({left:-Math.max(220,categoryScroll.clientWidth*.7),behavior:'smooth'}));
-$('#catNext').addEventListener('click',()=>categoryScroll.scrollBy({left:Math.max(220,categoryScroll.clientWidth*.7),behavior:'smooth'}));
-categoryScroll.addEventListener('scroll',updateCategoryArrows,{passive:true});
-window.addEventListener('resize',updateCategoryArrows);
-categoryScroll.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){categoryScroll.scrollBy({left:180,behavior:'smooth'});e.preventDefault()}if(e.key==='ArrowLeft'){categoryScroll.scrollBy({left:-180,behavior:'smooth'});e.preventDefault()}});
-$$('.tab').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;$$('.tab').forEach(x=>x.classList.toggle('on',x===b));b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});updateCategoryArrows();render()}));
-requestAnimationFrame(updateCategoryArrows);
+function dayInfo(o){const t=tpl(o),dt=dayDate(o);return{wd:t.wd,s:t.s,day:dt.getDate(),mon:MONTHS[dt.getMonth()],lessons:t.lessons}}
+$$('.tab').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;$$('.tab').forEach(x=>x.classList.toggle('on',x===b));render()}));
 function renderDayPick(){
   const base=Math.floor(dayIdx/7)*7, t=todayOff();
   let h=`<button class="day-cell" data-wk="-1" aria-label="Предыдущая неделя"><div class="text-[15px] font-bold mt-2.5">‹</div></button>`;
@@ -260,25 +235,14 @@ function render(){
   renderDayPick();
   const d=dayInfo(dayIdx), box=$('#body');
   if(tab==='att')box.innerHTML=viewAtt(d);
-  if(tab==='progress')box.innerHTML=viewProgress();
-  if(tab==='replace')box.innerHTML=viewReplacements(d);
   if(tab==='hw')box.innerHTML=viewHW(d);
   if(tab==='sch')box.innerHTML=viewSch(d);
   if(tab==='ev')box.innerHTML=viewEv(d);
   if(tab==='time')box.innerHTML=viewTime();
   box.firstElementChild&&box.firstElementChild.classList.add('view');
   icons(); bind();
-  if(tab==='progress')document.querySelector('#progressSearch')?.addEventListener('input',e=>{document.querySelectorAll('[data-student-row]').forEach(x=>x.hidden=!x.dataset.studentRow.includes(e.target.value.trim().toLowerCase()))});
-  if(tab==='replace')document.querySelectorAll('[data-replace-save]').forEach(b=>b.addEventListener('click',async()=>{const n=+b.dataset.replaceSave, status=document.querySelector(`[data-replace-status="${n}"]`).value, subject=document.querySelector(`[data-replace-subject="${n}"]`).value.trim();if(status==='Замена'&&!subject)return toast('Укажите предмет замены','err');try{const r=await fetch('/api/replacements',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({day:dayIdx,pair:n,status,subject,group:user.group})});const d=await r.json();if(!r.ok)throw Error(d.error);S.replacements=d.replacements;toast('Пометка сохранена','ok');render()}catch(e){toast(e.message,'err')}}));
 }
 
-function viewProgress(){
- if(!['curator','dev'].includes(ROLE))return '<div class="glass rounded-2xl p-4">Раздел доступен куратору и разработчику.</div>';
- return `<div class="space-y-3"><input id="progressSearch" class="inp w-full" placeholder="Поиск студента по ФИО…"><div class="glass rounded-2xl divide-y divide-white/[.06]">${STUDENTS.map((name,i)=>{const grades=Object.entries(S.grades).filter(([k])=>Number(k.split(':')[2])===i).map(([,v])=>Number(v)).filter(Number.isFinite);const marks=Object.entries(S.att).filter(([k])=>Number(k.split(':')[2])===i).map(([,v])=>v.t);const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(2):'—';return `<div class="p-3" data-student-row="${esc(name.toLowerCase())}"><div class="font-semibold text-[13px]">${esc(name)}</div><div class="text-[12px] text-white/60 mt-1">Средний балл: ${avg} · Оценки: ${grades.join(', ')||'нет'} · ${['Н','У','О','Б'].map(t=>`${t}: ${marks.filter(x=>x===t).length}`).join(' · ')}</div></div>`}).join('')}</div></div>`;
-}
-function viewReplacements(d){
- return `<div class="space-y-3"><div class="sec-title">Пометки о заменах · ${d.wd}, ${d.day} ${d.mon}</div>${d.lessons.map(l=>{const r=S.replacements?.[`${user.group}:${dayIdx}:${l.n}`]||{};return `<div class="glass rounded-2xl p-3"><div class="font-semibold text-[13px] mb-2">${l.n} пара · ${esc(l.title)}</div><select class="inp w-full mb-2" data-replace-status="${l.n}">${['','Возможна замена','Замена'].map(t=>`<option value="${t}" ${r.status===t?'selected':''}>${t||'Без пометки'}</option>`).join('')}</select><input class="inp w-full mb-2" data-replace-subject="${l.n}" value="${esc(r.subject||'')}" placeholder="Предмет замены (обязательно для «Замена»)"><button class="btn btn-p" data-replace-save="${l.n}">Сохранить</button></div>`}).join('')||'<div class="text-white/50">В этот день занятий нет.</div>'}</div>`;
-}
 /* ---------- Посещаемость ---------- */
 let attPair=null;
 function viewAtt(d){
@@ -308,7 +272,7 @@ function viewAtt(d){
           <span class="av">${n.split(' ').map(x=>x[0]).join('')}</span>
           <span class="flex-1 min-w-[120px]">
             <span class="block text-[13.5px] font-semibold leading-tight">${n}</span>
-            <span class="block text-[11px] text-white/35 mt-0.5">${a?ATT.find(x=>x[0]===a.t)[1]+(a.t==='О'&&a.min?` · ${a.min} мин`:''):'присутствует'}${g?` · оценка ${g}`:''}</span>
+            <span class="block text-[11px] text-white/35 mt-0.5">${a?ATT.find(x=>x[0]===a.t)[1]+(a.t==='О'&&a.min?` · ${a.min} мин`:''):'присутствует'}</span>
           </span>
           <span class="flex gap-1.5">${ATT.map(([t])=>`<button class="a-btn ${a&&a.t===t?'on on'+t:''}" data-a="${t}" data-i="${i}">${t}</button>`).join('')}</span>
         </div>`}).join('')}

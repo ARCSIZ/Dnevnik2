@@ -33,7 +33,6 @@ const HOST = process.env.HOST || '0.0.0.0';
 const PROD = process.env.NODE_ENV === 'production';
 const ROOT = __dirname;
 const DB_FILE = process.env.DATA_FILE ? path.resolve(process.env.DATA_FILE) : path.join(ROOT, 'data.json');
-const SEED_FILE = path.join(ROOT, 'data.json');
 /* Логин приводим к нижнему регистру: при входе пользовательский ввод
    тоже нормализуется, иначе совпадение не случится. */
 const DEV_LOGIN = String(process.env.DEV_LOGIN || '').trim().toLowerCase();
@@ -45,7 +44,6 @@ const SESSION_TTL = 30 * 24 * 60 * 60 * 1000;
 const SESSION_RENEW_AFTER = 12 * 60 * 60 * 1000;
 const MAX_BODY = 1024 * 1024;
 const CLEAN_DB_VERSION = 3;
-const PROFILE_ONLY_VERSION = 4;
 /* Расписание «идёт само»: в базе хранится типовая неделя, а номер дня в ключах
    оценок/посещаемости/ДЗ/мероприятий — число дней от даты старта (0 = первый понедельник).
    Дату старта можно сменить переменной SCHEDULE_START=ГГГГ-ММ-ДД (приводится к понедельнику). */
@@ -87,9 +85,8 @@ const DEFAULTS = {
   sessions: {},
   students: [],
   times: {},
-  grades: {}, gradeComments: {}, att: {}, hw: {},
+  grades: {}, att: {}, hw: {},
   ev: {},
-  replacements: {},
   sch: createBlankWeek(),
   push: { subs: {}, prefs: {}, held: {} }
 };
@@ -135,31 +132,11 @@ function purgeSessions() {
   }
 }
 function readDB() {
-  try { DB = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch (e) {
-    try { DB = JSON.parse(fs.readFileSync(SEED_FILE, 'utf8')); console.log('Восстановлена база из резервного data.json'); }
-    catch (_) { DB = clone(DEFAULTS); }
-  }
+  try { DB = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch (e) { DB = clone(DEFAULTS); }
   // Одноразовая очистка всех прежних демонстрационных данных.
   // После записи version=3 последующие перезапуски больше не сбрасывают базу.
   if (Number(DB.version || 0) < CLEAN_DB_VERSION) DB = clone(DEFAULTS);
   for (const [key, value] of Object.entries(DEFAULTS)) if (DB[key] === undefined) DB[key] = clone(value);
-  // One-time migration: retain profiles and group membership, clear old academic data.
-  // Works even when a persistent Docker volume contains the previous database.
-  if (Number(DB.version || 0) < PROFILE_ONLY_VERSION) {
-    DB.sch = createBlankWeek();
-    DB.times = {};
-    DB.grades = {};
-    DB.att = {};
-    DB.hw = {};
-    DB.ev = {};
-    DB.replacements = {};
-    if (Array.isArray(DB.groups)) for (const group of DB.groups) {
-      group.schedule = createBlankWeek();
-      group.times = {};
-    }
-    DB.version = PROFILE_ONLY_VERSION;
-    console.log('Профили сохранены; расписание, оценки, посещаемость и задания очищены');
-  }
   if (!Array.isArray(DB.accounts)) DB.accounts = [];
   if (!Array.isArray(DB.groups)) DB.groups = clone(DEFAULTS.groups);
   if (!DB.groups.length) DB.groups = clone(DEFAULTS.groups);
@@ -457,7 +434,7 @@ function changedKeys(before, after) {
 }
 function parseRecordKey(key, withStudent) {
   const parts = String(key).split(':').map(Number);
-  if (parts.some(n => !Number.isInteger(n)) || parts.length < (withStudent ? 3 : 2) || parts.length > (withStudent ? 4 : 2) || (parts.length===4 && (parts[3]<1 || parts[3]>3))) return null;
+  if (parts.some(n => !Number.isInteger(n))) return null;
   if (parts[0] < 0 || parts[0] > MAX_DAY || parts[1] < 1 || (withStudent && parts[2] < 0)) return null;
   return { day: parts[0], pair: parts[1], student: withStudent ? parts[2] : null };
 }
@@ -562,15 +539,14 @@ async function handleApi(req, res, url) {
     const user = requireAuth(req, res); if (!user) return;
     const staff = user.role !== 'student';
     const group = DB.groups.find(g => g.id === user.group || g.name === user.group);
-    const grades = staff ? DB.grades : Object.fromEntries(Object.entries(DB.grades).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
-    const att = staff ? DB.att : Object.fromEntries(Object.entries(DB.att).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
-    // Compatibility: imports from the journal were saved to DB.sch. Prefer that published schedule
-    // when it contains lessons, otherwise use the user's group schedule.
-    const hasLessons = value => Array.isArray(value) && value.length === 7 && value.some(d => Array.isArray(d?.lessons) && d.lessons.length > 0);
-    const visibleSchedule = hasLessons(DB.sch) ? DB.sch : (Array.isArray(group?.schedule) && group.schedule.length === 7 ? group.schedule : DEFAULTS.sch);
-    const visibleTimes = hasLessons(DB.sch) ? (DB.times || group?.times || {}) : (group?.times || DB.times || {});
-    const gradeComments = staff ? (DB.gradeComments || {}) : Object.fromEntries(Object.entries(DB.gradeComments || {}).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
-    return json(res, 200, { replacements: DB.replacements, grades, gradeComments, att, hw: DB.hw, sch: visibleSchedule, ev: DB.ev, times: visibleTimes, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students: staff ? DB.students : undefined, revision: DB.updatedAt || null });
+    const groupAccounts = DB.accounts.filter(a => a.role === 'student' && (a.group === group?.id || a.group === group?.name));
+    const groupStudentIndices = [...new Set(groupAccounts.map(a => Number(a.studentIndex)).filter(Number.isInteger))];
+    const curator = user.role === 'curator';
+    const visibleIndices = curator ? new Set(groupStudentIndices) : null;
+    const grades = staff ? Object.fromEntries(Object.entries(DB.grades).filter(([key]) => !visibleIndices || visibleIndices.has(Number(key.split(':')[2])))) : Object.fromEntries(Object.entries(DB.grades).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
+    const att = staff ? Object.fromEntries(Object.entries(DB.att).filter(([key]) => !visibleIndices || visibleIndices.has(Number(key.split(':')[2])))) : Object.fromEntries(Object.entries(DB.att).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
+    const students = curator ? DB.students.map((name, i) => groupStudentIndices.includes(i) ? name : null) : (staff ? DB.students : undefined);
+    return json(res, 200, { grades, att, hw: DB.hw, sch: group?.schedule || DB.sch, ev: DB.ev, times: group?.times || DB.times, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students, groupStudentIndices: curator ? groupStudentIndices : undefined, revision: DB.updatedAt || null });
   }
   if (pathname.startsWith('/api/state/') && req.method === 'PUT') {
     const part = pathname.split('/')[3], user = requireAuth(req, res); if (!user) return;
@@ -594,10 +570,6 @@ async function handleApi(req, res, url) {
         if (user.role !== 'dev' && (!teacherOwns(user, record.day, record.pair) || record.day !== todayOffset() || currentPair() !== record.pair)) return json(res, 403, { ok: false, error: 'Оценки доступны только на своей текущей паре' });
       }
       const prevGrades = DB.grades; DB.grades = input; gradesChanged(prevGrades, input, user);
-    } else if (part === 'gradeComments') {
-      if (!can(user, 'grades') || !validStateObject(input)) return json(res, 403, { ok: false, error: 'Нет права менять комментарии к оценкам' });
-      const next = {}; for (const [key, value] of Object.entries(input)) { if (!/^\d+:\d+:\d+(?::[1-3])?$/.test(key) || (value != null && typeof value !== 'string')) return json(res, 400, {ok:false,error:'Некорректный комментарий'}); if (String(value||'').trim()) next[key] = safeText(value,1000); }
-      DB.gradeComments = next;
     } else if (part === 'att') {
       if (!validStateObject(input) || (!can(user, 'attendance') && !can(user, 'ownAttendance'))) return json(res, 403, { ok: false, error: 'Нет права менять посещаемость' });
       for (const key of changedKeys(DB.att, input)) {
@@ -625,27 +597,6 @@ async function handleApi(req, res, url) {
     return json(res, 200, { ok: true, part, revision: DB.updatedAt });
   }
 
-  if (pathname === '/api/replacements' && req.method === 'PUT') {
-    const user = requireAuth(req, res); if (!user) return;
-    if (!['curator','starosta','dev'].includes(user.role)) return json(res,403,{ok:false,error:'Недостаточно прав'});
-    const input = await readBody(req);
-    const day = Number(input.day), pair = Number(input.pair);
-    if (!Number.isInteger(day) || day < 0 || day > MAX_DAY || !Number.isInteger(pair) || pair < 1 || pair > 12)
-      return json(res,400,{ok:false,error:'Неверный день или номер пары'});
-    const requestedGroup = safeText(input.group,80);
-    const groupRecord = DB.groups.find(g => g.id === (user.role === 'dev' ? requestedGroup : user.group) || g.name === (user.role === 'dev' ? requestedGroup : user.group));
-    if (!groupRecord) return json(res,400,{ok:false,error:'Группа не найдена: проверьте группу учётной записи'});
-    const group = groupRecord.id;
-    const status = safeText(input.status,30);
-    if (!['','Возможна замена','Замена'].includes(status)) return json(res,400,{ok:false,error:'Неверная пометка'});
-    const subject = safeText(input.subject,180);
-    if (status === 'Замена' && !subject) return json(res,400,{ok:false,error:'Укажите предмет замены'});
-    const key = `${group}:${day}:${pair}`;
-    if (status) DB.replacements[key] = {status,subject:status==='Замена'?subject:'',by:user.fio,updatedAt:new Date().toISOString()};
-    else delete DB.replacements[key];
-    DB.updatedAt = new Date().toISOString();saveDB();return json(res,200,{ok:true,replacements:DB.replacements});
-  }
-
   if (pathname === '/api/schedule/import' && req.method === 'POST') {
     const user = requireAuth(req, res, 'schedule'); if (!user) return;
     const input = await readBody(req);
@@ -655,14 +606,7 @@ async function handleApi(req, res, url) {
       times = sanitizeTimes({ ...DB.times, ...input.times });
     }
     const sch = sanitizeSchedule(input.sch, times);
-    // Publishing an imported timetable updates the shared published copy and group snapshots,
-    // so accounts whose group still has a blank template see the newly published timetable too.
-    DB.times = times; DB.sch = sch;
-    if (Array.isArray(DB.groups)) for (const group of DB.groups) {
-      group.schedule = clone(sch);
-      group.times = clone(times);
-    }
-    scheduleChanged(user.login);
+    DB.times = times; DB.sch = sch; scheduleChanged(user.login);
     DB.updatedAt = new Date().toISOString(); saveDB();
     return json(res, 200, { ok: true, lessons: sch.reduce((sum, day) => sum + day.lessons.length, 0), revision: DB.updatedAt });
   }

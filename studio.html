@@ -189,7 +189,7 @@ async function pullState(options = {}){
   if(r.status===401)return location.replace('/login.html');
   if(!r.ok)throw new Error('Не удалось загрузить данные');
   const d=await r.json();
-  S.grades=d.grades||{};S.gradeComments=d.gradeComments||{};S.att=d.att||{};S.hw=d.hw||{};
+  S.grades=d.grades||{};S.att=d.att||{};S.hw=d.hw||{};
   if(d.times){Object.keys(PAIRS).forEach(k=>delete PAIRS[k]);Object.assign(PAIRS,d.times)}
   if(d.start&&/^\d{4}-\d{2}-\d{2}$/.test(d.start)){const[yy,mm,dd]=d.start.split('-').map(Number);SCH_START=new Date(yy,mm-1,dd,12);if(!firstPull){firstPull=true;dayIdx=todayOff()}}
   if(d.sch)d.sch.forEach((x,i)=>{if(WEEK[i])WEEK[i].lessons=x.lessons||[]});
@@ -314,25 +314,22 @@ function renderStudents(){
   if(pairN===null){box.innerHTML=`<div class="p-6 text-center text-[13px] text-white/40">Выберите пару, чтобы выставлять оценки и отметки.</div>`;return}
   const editable=ROLE==='dev'||(pairN===livePair()&&dayIdx===todayRaw());
   box.innerHTML=STUDENTS.map((n,i)=>{
-    const a=S.att[gk(dayIdx,pairN,i)];
+    const g=S.grades[gk(dayIdx,pairN,i)], a=S.att[gk(dayIdx,pairN,i)];
     const ini=n.split(' ').map(x=>x[0]).join('');
-    const gradeSlots=[1,2,3].map(slot=>{const key=`${gk(dayIdx,pairN,i)}:${slot}`,g=S.grades[key] ?? (slot===1?S.grades[gk(dayIdx,pairN,i)]:undefined);return `<span class="inline-flex gap-1 items-center mr-1"><span class="text-[9px] text-white/30">${slot}</span>${[5,4,3,2].map(v=>`<button class="g-btn ${g===v?'on'+v:''}" data-g="${v}" data-slot="${slot}" data-i="${i}" ${editable?'':'disabled'}>${v}</button>`).join('')}<button class="g-btn" data-gcomment="${slot}" data-i="${i}" title="Комментарий к оценке" ${editable?'':'disabled'}>✎</button></span>`}).join('');
     return `<div class="st-row ls-item" style="animation-delay:${i*.025}s">
       <span class="av">${ini}</span>
       <span class="flex-1 min-w-[120px]">
         <span class="block text-[13.5px] font-semibold leading-tight">${n}</span>
         <span class="block text-[11px] text-white/35 mt-0.5">${a?`${ATT.find(x=>x[0]===a.t)[1]}${a.t==='О'&&a.min?` · ${a.min} мин`:''}`:'на занятии'}</span>
       </span>
-      <span class="flex flex-wrap gap-1 ${editable?'':'opacity-40'}">${gradeSlots}</span>
+      <span class="flex gap-1.5 ${editable?'':'opacity-40'}">${[5,4,3,2].map(v=>`<button class="g-btn ${g===v?'on'+v:''}" data-g="${v}" data-i="${i}" ${editable?'':'disabled'}>${v}</button>`).join('')}</span>
       <span class="w-px h-7 bg-white/10 mx-0.5"></span>
       <span class="flex gap-1.5 ${editable?'':'opacity-40'}">${ATT.map(([t])=>`<button class="a-btn ${a&&a.t===t?'on'+t:''}" data-a="${t}" data-i="${i}" title="${ATT.find(x=>x[0]===t)[1]}" ${editable?'':'disabled'}>${t}</button>`).join('')}</span>
     </div>`}).join('');
-  $$('#students [data-g]').forEach(b=>b.addEventListener('click',()=>{
-    const i=+b.dataset.i,v=+b.dataset.g,slot=+b.dataset.slot,k=`${gk(dayIdx,pairN,i)}:${slot}`;
-    const existing=S.grades[k] ?? (slot===1?S.grades[gk(dayIdx,pairN,i)]:undefined);
-    if(existing===v){delete S.grades[k];if(slot===1)delete S.grades[gk(dayIdx,pairN,i)];toast(`Оценка у «${STUDENTS[i]}» удалена`)}else{S.grades[k]=v;if(slot===1)delete S.grades[gk(dayIdx,pairN,i)];toast(`${STUDENTS[i]} — оценка ${v}`,'ok')}
+  $$('#students .g-btn').forEach(b=>b.addEventListener('click',()=>{
+    const i=+b.dataset.i,v=+b.dataset.g,k=gk(dayIdx,pairN,i);
+    if(S.grades[k]===v){delete S.grades[k];toast(`Оценка у «${STUDENTS[i]}» удалена`)}else{S.grades[k]=v;toast(`${STUDENTS[i]} — оценка ${v}`,'ok')}
     save(S);api('grades',S.grades);renderStudents();}));
-  $$('#students [data-gcomment]').forEach(b=>b.addEventListener('click',async()=>{const i=+b.dataset.i,slot=+b.dataset.gcomment,k=`${gk(dayIdx,pairN,i)}:${slot}`;const value=prompt(`Комментарий к оценке №${slot} — ${STUDENTS[i]}`,S.gradeComments?.[k]||'');if(value===null)return;S.gradeComments=S.gradeComments||{};if(value.trim())S.gradeComments[k]=value.trim();else delete S.gradeComments[k];const ok=await api('gradeComments',S.gradeComments);if(ok)toast('Комментарий сохранён','ok')}));
   $$('#students .a-btn').forEach(b=>b.addEventListener('click',()=>{
     const i=+b.dataset.i,t=b.dataset.a,k=gk(dayIdx,pairN,i);
     if(S.att[k]&&S.att[k].t===t){delete S.att[k];toast(`Отметка у «${STUDENTS[i]}» снята`)}

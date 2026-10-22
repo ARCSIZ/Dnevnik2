@@ -329,7 +329,7 @@
     .blob { animation: none !important; }
     * { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-delay: 0s !important; }
   }
-.lesson-finished{opacity:.48;filter:grayscale(.8)}.attendance-mark{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:5px;font-size:10px;font-weight:800;background:rgba(255,255,255,.12)}.attendance-Н{color:#fca5a5}.attendance-У{color:#93c5fd}.attendance-О{color:#fcd34d}.attendance-Б{color:#86efac}</style>
+</style>
 </head>
 <body class="antialiased">
 
@@ -410,7 +410,7 @@
         <button type="button" class="icon-btn" id="gradesBack" aria-label="Назад"><i data-lucide="arrow-left" style="width:17px;height:17px"></i></button>
         <div class="min-w-0">
           <h1 class="font-display font-bold text-[22px] leading-none">Успеваемость</h1>
-          <div class="text-[12px] text-white/40 mt-1.5">02-СД-25-о · текущий период</div>
+          <div class="text-[12px] text-white/40 mt-1.5" id="gradesSubtitle">Текущий период</div>
         </div>
       </div>
       <div id="gradesBody"></div>
@@ -670,7 +670,6 @@ let subTab = 'schedule';
 
 const EXTRA = {};
 const extraOf = (di, n) => EXTRA[`${di}-${n}`] || {};
-const attendanceForLesson = (di,n) => { const d=window.__STATE_CACHE||{}; return Object.entries(d.att||{}).filter(([k])=>{const a=k.split(':').map(Number);return a[0]===di&&a[1]===n;}).map(([,v])=>v?.t).filter(Boolean); };
 const GRADE_CLS = { 5: 'g5', 4: 'g4', 3: 'g3', 2: 'g2' };
 const GRADE_WORD = { 5: 'отлично', 4: 'хорошо', 3: 'удовлетворительно', 2: 'неудовлетворительно' };
 
@@ -747,17 +746,14 @@ function lessonHTML(l, isLast, live, pct, elapsed, delay) {
   const [s, e] = PAIRS[l.n];
   const icon = pickIcon(l.title, tp.icon);
   const ex = extraOf(dayIdx, l.n);
-  const finished = dayIdx < todayRaw() || (dayIdx === todayRaw() && nowMin() >= e);
-  const attendance = attendanceForLesson(dayIdx,l.n);
   const marks = (ex.grade ? `<span class="grade-pill ${GRADE_CLS[ex.grade]}">${ex.grade}</span>` : '')
-    + (attendance.length ? `<span class="chip gap-chip-sm" title="Отметки посещаемости">${attendance.map(t=>`<b class="attendance-mark attendance-${t}">${t}</b>`).join(' ')}</span>` : '')
     + (ex.hw ? `<span class="chip gap-chip-sm"><i data-lucide="book-marked"></i>ДЗ</span>` : '');
   return `
     <div class="flex gap-3.5 ls-item" style="animation-delay:${delay}s">
       <div class="w-9 shrink-0 flex flex-col items-center">
         <div class="pair-badge ${tp.badge}">${l.n}</div>
       </div>
-      <article role="button" tabindex="0" data-pair="${l.n}" class="lesson-card glass rounded-2xl px-4 py-3.5 flex-1 min-w-0 ${live ? 'ls-live' : ''} ${finished && !live ? 'lesson-finished' : ''}">
+      <article role="button" tabindex="0" data-pair="${l.n}" class="lesson-card glass rounded-2xl px-4 py-3.5 flex-1 min-w-0 ${live ? 'ls-live' : ''}">
         <div class="flex items-center gap-2 flex-wrap mb-2.5">
           <span class="chip ${tp.chip}"><i data-lucide="${icon}"></i>${tp.label}</span>
           ${live ? '<span class="chip live-chip"><span class="live-dot"></span>сейчас идёт</span>' : ''}
@@ -1193,8 +1189,7 @@ function rebuildSubjects(grades) {
     if (!grouped.has(lesson.title)) grouped.set(lesson.title, {
       name: lesson.title, teacher: lesson.teacher, icon: pickIcon(lesson.title, 'book-open'), marks: []
     });
-    const slot=Number(key.split(':')[3]||1); const note=(window.__STATE_CACHE?.gradeComments||{})[`${day}:${pair}:${student}:${slot}`] || (slot===1?(window.__STATE_CACHE?.gradeComments||{})[`${day}:${pair}:${student}`]:'');
-    grouped.get(lesson.title).marks.push({ g: Number(grade), d: `${info.day} ${info.mon}`, w: note ? `Комментарий: ${note}` : 'Оценка за занятие' });
+    grouped.get(lesson.title).marks.push({ g: Number(grade), d: `${info.day} ${info.mon}`, w: 'Оценка за занятие' });
   });
   SUBJECTS.push(...grouped.values());
   const marks = allMarks();
@@ -1352,8 +1347,42 @@ function renderGrades() {
 }
 
 const gradesScreenEl = $('#screenGrades');
+function renderCuratorGroupGrades() {
+  const indices = Array.isArray(GROUP_STUDENT_INDICES) ? GROUP_STUDENT_INDICES : [];
+  const names = Array.isArray(GROUP_STUDENTS) ? GROUP_STUDENTS : [];
+  const gradeEntries = Object.entries(GROUP_GRADES || {});
+  const subjects = new Map();
+  for (const [key, value] of gradeEntries) {
+    const [day, pair, student] = key.split(':').map(Number);
+    if (!indices.includes(student)) continue;
+    const info = dayInfo(day);
+    const lesson = info.lessons.find(item => Number(item.n) === pair);
+    if (!lesson || !Number.isFinite(Number(value))) continue;
+    if (!subjects.has(lesson.title)) subjects.set(lesson.title, { name: lesson.title, marks: [] });
+    subjects.get(lesson.title).marks.push({ student, grade: Number(value), date: `${info.day} ${info.mon}` });
+  }
+  const rows = indices.map(index => {
+    const name = names[index] || names[indices.indexOf(index)] || `Студент ${index + 1}`;
+    const grades = gradeEntries.filter(([key, value]) => Number(key.split(':')[2]) === index && Number.isFinite(Number(value))).map(([, value]) => Number(value));
+    const avg = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(2) : '—';
+    const absences = Object.entries(GROUP_ATT || {}).filter(([key, value]) => Number(key.split(':')[2]) === index && value && ['Н','О','Б','У'].includes(value.t)).length;
+    const subjectCells = [...subjects.values()].map(subject => {
+      const own = subject.marks.filter(m => m.student === index).map(m => m.grade);
+      return `<td class="px-3 py-3 text-center border-t border-white/[.06]">${own.length ? `<span class="font-bold" style="color:${gradeColor(Math.round(own.reduce((a,b)=>a+b,0)/own.length))}">${(own.reduce((a,b)=>a+b,0)/own.length).toFixed(1)}</span><span class="block text-[10px] text-white/35">${own.length} оц.</span>` : '<span class="text-white/20">—</span>'}</td>`;
+    }).join('');
+    return `<tr data-curator-name="${String(name).toLowerCase().replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"><td class="px-3 py-3 border-t border-white/[.06] min-w-[180px]"><div class="font-semibold text-[12.5px]">${name}</div><div class="text-[10.5px] text-white/35 mt-1">${grades.length} оценок · ${absences} отметок посещаемости</div></td><td class="px-3 py-3 text-center border-t border-white/[.06] font-bold">${avg}</td>${subjectCells}</tr>`;
+  }).join('');
+  const all = gradeEntries.filter(([key, value]) => indices.includes(Number(key.split(':')[2])) && Number.isFinite(Number(value))).map(([,v])=>Number(v));
+  const average = all.length ? (all.reduce((a,b)=>a+b,0)/all.length).toFixed(2) : '—';
+  $('#gradesSubtitle').textContent = `${AUTH_USER?.group || 'Группа'} · статистика группы`;
+  $('#gradesBody').innerHTML = `<div class="grid grid-cols-2 gap-3 mb-4"><div class="glass rounded-2xl p-4"><div class="text-[11px] text-white/45">Студентов в группе</div><div class="font-display text-2xl font-bold mt-2">${indices.length}</div></div><div class="glass rounded-2xl p-4"><div class="text-[11px] text-white/45">Средний балл группы</div><div class="font-display text-2xl font-bold mt-2">${average}</div><div class="text-[10px] text-white/35 mt-1">${all.length} оценок</div></div></div><div class="glass rounded-2xl p-4 mb-3"><label class="block text-[12px] text-white/45 mb-2" for="curatorSearch">Поиск студента по ФИО</label><input id="curatorSearch" class="w-full rounded-xl px-3 py-3 bg-white/[.04] border border-white/10 outline-none text-sm" placeholder="Введите фамилию или имя"></div><div class="glass rounded-2xl overflow-x-auto"><table class="w-full text-left border-collapse"><thead class="bg-white/[.035]"><tr><th class="px-3 py-3 text-[10px] uppercase tracking-wide text-white/45">Студент</th><th class="px-3 py-3 text-[10px] uppercase tracking-wide text-white/45 text-center">Средний</th>${[...subjects.keys()].map(n=>`<th class="px-3 py-3 text-[10px] text-white/45 min-w-[110px] text-center">${n}</th>`).join('')}</tr></thead><tbody>${rows || `<tr><td colspan="${2+subjects.size}" class="px-4 py-8 text-center text-sm text-white/40">В группе пока нет данных об оценках.</td></tr>`}</tbody></table></div><p class="text-[11px] text-white/30 text-center mt-3">Средний балл рассчитан по выставленным оценкам. Посещаемость отображается количеством отметок У, Н, О и Б.</p>`;
+  $('#curatorSearch')?.addEventListener('input', e => { const q=e.target.value.trim().toLocaleLowerCase('ru'); $('#gradesBody').querySelectorAll('tbody tr[data-curator-name]').forEach(row => row.classList.toggle('hidden', !row.dataset.curatorName.includes(q))); });
+  icons();
+}
+let GROUP_STUDENT_INDICES = [], GROUP_STUDENTS = [], GROUP_GRADES = {}, GROUP_ATT = {};
+
 function openGrades() {
-  renderGrades();
+  if (AUTH_USER?.role === 'curator') renderCuratorGroupGrades(); else { $('#gradesSubtitle').textContent = `${AUTH_USER?.group || 'Мои результаты'} · текущий период`; renderGrades(); }
   screen = 'grades';
   const acc = $('#screenAccount');
   if (reduced) { acc.classList.add('hidden'); gradesScreenEl.classList.remove('hidden'); scrollTo({ top: 0 }); return; }
@@ -1643,15 +1672,15 @@ $('#logoutBtn').addEventListener('click', async () => {
       EXTRA[key] = EXTRA[key] || {};
       EXTRA[key].hw = { text: v.text, due: v.due, src: v.src || 'Выдано в студии' };
     });
-    window.__STATE_CACHE=d;
     Object.entries(d.grades || {}).forEach(([k, v]) => {
       const [dd, pp, ii] = k.split(':');
       if (AUTH_USER.role === 'student' && +ii !== AUTH_USER.studentIndex) return;
       const key = `${dd}-${pp}`;
       EXTRA[key] = EXTRA[key] || {};
-      EXTRA[key].grade = v; EXTRA[key].gradeNote = (d.gradeComments||{})[k] || 'Выставлено преподавателем';
+      EXTRA[key].grade = v; EXTRA[key].gradeNote = 'Выставлено преподавателем';
     });
     rebuildSubjects(d.grades || {});
+    GROUP_STUDENTS = d.students || []; GROUP_STUDENT_INDICES = d.groupStudentIndices || []; GROUP_GRADES = d.grades || {}; GROUP_ATT = d.att || {};
     renderWeekStrip();
     selectDay(dayIdx, 0, true, true);
   } catch (error) {
