@@ -33,6 +33,7 @@ const HOST = process.env.HOST || '0.0.0.0';
 const PROD = process.env.NODE_ENV === 'production';
 const ROOT = __dirname;
 const DB_FILE = process.env.DATA_FILE ? path.resolve(process.env.DATA_FILE) : path.join(ROOT, 'data.json');
+const SEED_FILE = path.join(ROOT, 'data.json');
 /* Логин приводим к нижнему регистру: при входе пользовательский ввод
    тоже нормализуется, иначе совпадение не случится. */
 const DEV_LOGIN = String(process.env.DEV_LOGIN || '').trim().toLowerCase();
@@ -87,6 +88,7 @@ const DEFAULTS = {
   times: {},
   grades: {}, att: {}, hw: {},
   ev: {},
+  replacements: {},
   sch: createBlankWeek(),
   push: { subs: {}, prefs: {}, held: {} }
 };
@@ -132,7 +134,10 @@ function purgeSessions() {
   }
 }
 function readDB() {
-  try { DB = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch (e) { DB = clone(DEFAULTS); }
+  try { DB = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); } catch (e) {
+    try { DB = JSON.parse(fs.readFileSync(SEED_FILE, 'utf8')); console.log('Восстановлена база из резервного data.json'); }
+    catch (_) { DB = clone(DEFAULTS); }
+  }
   // Одноразовая очистка всех прежних демонстрационных данных.
   // После записи version=3 последующие перезапуски больше не сбрасывают базу.
   if (Number(DB.version || 0) < CLEAN_DB_VERSION) DB = clone(DEFAULTS);
@@ -541,7 +546,7 @@ async function handleApi(req, res, url) {
     const group = DB.groups.find(g => g.id === user.group || g.name === user.group);
     const grades = staff ? DB.grades : Object.fromEntries(Object.entries(DB.grades).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
     const att = staff ? DB.att : Object.fromEntries(Object.entries(DB.att).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
-    return json(res, 200, { grades, att, hw: DB.hw, sch: group?.schedule || DB.sch, ev: DB.ev, times: group?.times || DB.times, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students: staff ? DB.students : undefined, revision: DB.updatedAt || null });
+    return json(res, 200, { replacements: DB.replacements, grades, att, hw: DB.hw, sch: group?.schedule || DB.sch, ev: DB.ev, times: group?.times || DB.times, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students: staff ? DB.students : undefined, revision: DB.updatedAt || null });
   }
   if (pathname.startsWith('/api/state/') && req.method === 'PUT') {
     const part = pathname.split('/')[3], user = requireAuth(req, res); if (!user) return;
@@ -590,6 +595,25 @@ async function handleApi(req, res, url) {
     } else return json(res, 404, { ok: false, error: 'Неизвестный раздел' });
     DB.updatedAt = new Date().toISOString(); saveDB();
     return json(res, 200, { ok: true, part, revision: DB.updatedAt });
+  }
+
+  if (pathname === '/api/replacements' && req.method === 'PUT') {
+    const user = requireAuth(req, res); if (!user) return;
+    if (!['curator','starosta','dev'].includes(user.role)) return json(res,403,{ok:false,error:'Недостаточно прав'});
+    const input = await readBody(req);
+    const day = Number(input.day), pair = Number(input.pair);
+    if (!Number.isInteger(day) || day < 0 || day > MAX_DAY || !Number.isInteger(pair) || pair < 1 || pair > 12)
+      return json(res,400,{ok:false,error:'Неверный день или номер пары'});
+    const group = user.role === 'dev' ? safeText(input.group,80) : user.group;
+    if (!DB.groups.some(g => g.id === group)) return json(res,400,{ok:false,error:'Группа не найдена'});
+    const status = safeText(input.status,30);
+    if (!['','Возможна замена','Замена'].includes(status)) return json(res,400,{ok:false,error:'Неверная пометка'});
+    const subject = safeText(input.subject,180);
+    if (status === 'Замена' && !subject) return json(res,400,{ok:false,error:'Укажите предмет замены'});
+    const key = `${group}:${day}:${pair}`;
+    if (status) DB.replacements[key] = {status,subject:status==='Замена'?subject:'',by:user.fio,updatedAt:new Date().toISOString()};
+    else delete DB.replacements[key];
+    DB.updatedAt = new Date().toISOString();saveDB();return json(res,200,{ok:true,replacements:DB.replacements});
   }
 
   if (pathname === '/api/schedule/import' && req.method === 'POST') {

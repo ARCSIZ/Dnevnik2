@@ -140,12 +140,12 @@ function stats(){$('#stAcc').textContent=ACC.length;$('#stTeach').textContent=AC
 function viewAcc(){
   return `<div>
     <div class="flex items-center justify-between mb-2"><div class="sec-title !mb-0"><i data-lucide="users-round"></i>Все аккаунты</div>
-      <input class="inp !py-1.5 !w-auto !text-[12px]" id="q" placeholder="поиск…"></div>
+      <input class="inp !py-1.5 !w-auto !text-[12px]" id="q" placeholder="Поиск по ФИО…"><select class="inp !py-1.5 !w-auto !text-[12px]" id="accGroup"><option value="">Все группы</option>${GROUPS.map(g=>`<option value="${g.id}">${g.name}</option>`).join('')}</select></div>
     <div class="glass rounded-2xl divide-y divide-white/[0.06] overflow-hidden" id="accList"></div>
   </div>`;
 }
-function accRows(f=''){
-  const list=ACC.filter(a=>(a.fio+a.login+ROLES[a.role].n).toLowerCase().includes(f.toLowerCase()));
+function accRows(f='',group=''){
+  const list=ACC.filter(a=>(!group || a.group===group) && (a.fio+a.login+ROLES[a.role].n).toLowerCase().includes(f.toLowerCase()));
   return list.map((a,i)=>{const R=ROLES[a.role];const idx=ACC.indexOf(a);
     return `<div class="flex items-center gap-3 p-3 ls-item" style="animation-delay:${i*.02}s">
       <span class="av" style="background:${R.g}">${a.fio.split(' ').map(x=>x[0]).slice(0,2).join('')}</span>
@@ -251,7 +251,7 @@ function render(){
 
   if(tab==='acc'){
     const list=$('#accList'); list.innerHTML=accRows(); icons(); bindAcc();
-    $('#q').addEventListener('input',e=>{list.innerHTML=accRows(e.target.value);icons();bindAcc()});
+    const filterAcc=()=>{list.innerHTML=accRows($('#q').value,$('#accGroup').value);icons();bindAcc()};$('#q').addEventListener('input',filterAcc);$('#accGroup').addEventListener('change',filterAcc);
   }
   if(tab==='new'){
     const sync=()=>{const r=$('#fRole').value,R=ROLES[r];

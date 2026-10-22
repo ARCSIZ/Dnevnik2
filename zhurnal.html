@@ -107,6 +107,8 @@
   <div class="hscroll mt-4 fade-up">
     <div class="tabs" id="tabs" style="min-width:max-content">
       <button class="tab on" data-t="att"><i data-lucide="user-check"></i><span>Посещаемость</span></button>
+      <button class="tab" data-t="progress"><i data-lucide="chart-no-axes-column"></i><span>Оценки и успеваемость</span></button>
+      <button class="tab" data-t="replace"><i data-lucide="repeat"></i><span>Замены</span></button>
       <button class="tab" data-t="hw"><i data-lucide="book-marked"></i><span>ДЗ</span></button>
       <button class="tab" data-t="sch"><i data-lucide="calendar-cog"></i><span>Расписание</span></button>
       <button class="tab" data-t="ev"><i data-lucide="party-popper"></i><span>Мероприятия</span></button>
@@ -148,7 +150,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const BASE=emptyWeek();
 const STUDENTS=[];
 
-let S={grades:{},att:{},hw:{},sch:null,ev:null,times:null};
+let S={grades:{},att:{},hw:{},replacements:{},sch:null,ev:null,times:null};
 const save=()=>{};
 const persistTimes=()=>api('times',PAIRS);
 
@@ -193,6 +195,7 @@ async function pullState(options = {}){
     if(d.start&&/^\d{4}-\d{2}-\d{2}$/.test(d.start)){const[yy,mm,dd]=d.start.split('-').map(Number);SCH_START=new Date(yy,mm-1,dd,12);if(!firstPull){firstPull=true;dayIdx=todayOff()}}
     if(d.sch){S.sch=d.sch;WEEK.length=0;JSON.parse(JSON.stringify(d.sch)).forEach(x=>WEEK.push({wd:x.wd,s:x.s,lessons:x.lessons||[]}))}
     if(d.ev){Object.keys(EVENTS).forEach(k=>delete EVENTS[k]);Object.assign(EVENTS,d.ev)}
+    if(d.replacements)S.replacements=d.replacements;
     if(d.students){STUDENTS.length=0;d.students.forEach(x=>STUDENTS.push(x))}
     render();
   }catch(e){toast(e.message||'Ошибка синхронизации','err')}
@@ -235,14 +238,25 @@ function render(){
   renderDayPick();
   const d=dayInfo(dayIdx), box=$('#body');
   if(tab==='att')box.innerHTML=viewAtt(d);
+  if(tab==='progress')box.innerHTML=viewProgress();
+  if(tab==='replace')box.innerHTML=viewReplacements(d);
   if(tab==='hw')box.innerHTML=viewHW(d);
   if(tab==='sch')box.innerHTML=viewSch(d);
   if(tab==='ev')box.innerHTML=viewEv(d);
   if(tab==='time')box.innerHTML=viewTime();
   box.firstElementChild&&box.firstElementChild.classList.add('view');
   icons(); bind();
+  if(tab==='progress')document.querySelector('#progressSearch')?.addEventListener('input',e=>{document.querySelectorAll('[data-student-row]').forEach(x=>x.hidden=!x.dataset.studentRow.includes(e.target.value.trim().toLowerCase()))});
+  if(tab==='replace')document.querySelectorAll('[data-replace-save]').forEach(b=>b.addEventListener('click',async()=>{const n=+b.dataset.replaceSave, status=document.querySelector(`[data-replace-status="${n}"]`).value, subject=document.querySelector(`[data-replace-subject="${n}"]`).value.trim();if(status==='Замена'&&!subject)return toast('Укажите предмет замены','err');try{const r=await fetch('/api/replacements',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({day:dayIdx,pair:n,status,subject,group:user.group})});const d=await r.json();if(!r.ok)throw Error(d.error);S.replacements=d.replacements;toast('Пометка сохранена','ok');render()}catch(e){toast(e.message,'err')}}));
 }
 
+function viewProgress(){
+ if(!['curator','dev'].includes(ROLE))return '<div class="glass rounded-2xl p-4">Раздел доступен куратору и разработчику.</div>';
+ return `<div class="space-y-3"><input id="progressSearch" class="inp w-full" placeholder="Поиск студента по ФИО…"><div class="glass rounded-2xl divide-y divide-white/[.06]">${STUDENTS.map((name,i)=>{const grades=Object.entries(S.grades).filter(([k])=>Number(k.split(':')[2])===i).map(([,v])=>Number(v)).filter(Number.isFinite);const marks=Object.entries(S.att).filter(([k])=>Number(k.split(':')[2])===i).map(([,v])=>v.t);const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(2):'—';return `<div class="p-3" data-student-row="${esc(name.toLowerCase())}"><div class="font-semibold text-[13px]">${esc(name)}</div><div class="text-[12px] text-white/60 mt-1">Средний балл: ${avg} · Оценки: ${grades.join(', ')||'нет'} · ${['Н','У','О','Б'].map(t=>`${t}: ${marks.filter(x=>x===t).length}`).join(' · ')}</div></div>`}).join('')}</div></div>`;
+}
+function viewReplacements(d){
+ return `<div class="space-y-3"><div class="sec-title">Пометки о заменах · ${d.wd}, ${d.day} ${d.mon}</div>${d.lessons.map(l=>{const r=S.replacements?.[`${user.group}:${dayIdx}:${l.n}`]||{};return `<div class="glass rounded-2xl p-3"><div class="font-semibold text-[13px] mb-2">${l.n} пара · ${esc(l.title)}</div><select class="inp w-full mb-2" data-replace-status="${l.n}">${['','Возможна замена','Замена'].map(t=>`<option value="${t}" ${r.status===t?'selected':''}>${t||'Без пометки'}</option>`).join('')}</select><input class="inp w-full mb-2" data-replace-subject="${l.n}" value="${esc(r.subject||'')}" placeholder="Предмет замены (обязательно для «Замена»)"><button class="btn btn-p" data-replace-save="${l.n}">Сохранить</button></div>`}).join('')||'<div class="text-white/50">В этот день занятий нет.</div>'}</div>`;
+}
 /* ---------- Посещаемость ---------- */
 let attPair=null;
 function viewAtt(d){
