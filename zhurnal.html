@@ -46,7 +46,17 @@
   .tab svg { width:14px;height:14px;flex-shrink:0; }
   .tab.on { color:#fff;background:linear-gradient(135deg,rgba(109,91,255,.9),rgba(168,85,247,.9));box-shadow:0 6px 18px -6px rgba(124,108,255,.6); }
   .tab:active { transform:scale(.96); }
-  @media (min-width:600px) { .tab { flex:1; } }
+  .category-nav { display:flex;align-items:center;gap:7px;min-width:0; }
+  .category-scroll { flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:rgba(167,139,250,.5) transparent;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;touch-action:pan-x; }
+  .category-scroll::-webkit-scrollbar { display:block;height:4px; }
+  .category-scroll::-webkit-scrollbar-track { background:rgba(255,255,255,.04);border-radius:99px; }
+  .category-scroll::-webkit-scrollbar-thumb { background:rgba(167,139,250,.45);border-radius:99px; }
+  .category-nav .tabs { width:max-content;min-width:max-content; }
+  .category-nav .tab { flex:0 0 auto; }
+  .cat-arrow { width:34px;height:38px;flex:0 0 34px;border-radius:11px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);color:rgba(255,255,255,.8);cursor:pointer; }
+  .cat-arrow:hover { background:rgba(255,255,255,.1);color:#fff; }
+  .cat-arrow:disabled { opacity:.25;cursor:default; }
+  @media (max-width:420px) { .tab { padding:9px 11px;font-size:12px; } .category-nav { gap:5px; } .cat-arrow { width:30px;flex-basis:30px; } }
   .day-cell { flex:0 0 auto;width:54px;padding:8px 3px;border-radius:14px;cursor:pointer;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:rgba(255,255,255,.55);text-align:center;transition:all .18s; }
   .day-cell:hover { color:#fff;border-color:rgba(167,139,250,.35);transform:translateY(-2px); }
   .day-cell.on { background:linear-gradient(140deg,#6d5bff,#a855f7);border-color:transparent;color:#fff;box-shadow:0 10px 26px -12px rgba(124,108,255,.7); }
@@ -104,16 +114,20 @@
 </header>
 
 <main class="relative z-10 mx-auto w-full max-w-[760px] px-5 pb-24">
-  <div class="hscroll mt-4 fade-up">
-    <div class="tabs" id="tabs" style="min-width:max-content">
-      <button class="tab on" data-t="att"><i data-lucide="user-check"></i><span>Посещаемость</span></button>
-      <button class="tab" data-t="progress"><i data-lucide="chart-no-axes-column"></i><span>Оценки и успеваемость</span></button>
-      <button class="tab" data-t="replace"><i data-lucide="repeat"></i><span>Замены</span></button>
-      <button class="tab" data-t="hw"><i data-lucide="book-marked"></i><span>ДЗ</span></button>
-      <button class="tab" data-t="sch"><i data-lucide="calendar-cog"></i><span>Расписание</span></button>
-      <button class="tab" data-t="ev"><i data-lucide="party-popper"></i><span>Мероприятия</span></button>
-      <button class="tab" data-t="time"><i data-lucide="clock"></i><span>Время пар</span></button>
+  <div class="category-nav mt-4 fade-up" aria-label="Категории журнала">
+    <button class="cat-arrow" id="catPrev" type="button" aria-label="Прокрутить категории влево" title="Назад"><i data-lucide="chevron-left" style="width:17px;height:17px"></i></button>
+    <div class="category-scroll" id="categoryScroll" tabindex="0" role="region" aria-label="Категории журнала. Прокручивайте влево и вправо">
+      <div class="tabs" id="tabs">
+        <button class="tab on" data-t="att"><i data-lucide="user-check"></i><span>Посещаемость</span></button>
+        <button class="tab" data-t="progress"><i data-lucide="chart-no-axes-column"></i><span>Оценки и успеваемость</span></button>
+        <button class="tab" data-t="replace"><i data-lucide="repeat"></i><span>Замены</span></button>
+        <button class="tab" data-t="hw"><i data-lucide="book-marked"></i><span>ДЗ</span></button>
+        <button class="tab" data-t="sch"><i data-lucide="calendar-cog"></i><span>Расписание</span></button>
+        <button class="tab" data-t="ev"><i data-lucide="party-popper"></i><span>Мероприятия</span></button>
+        <button class="tab" data-t="time"><i data-lucide="clock"></i><span>Время пар</span></button>
+      </div>
     </div>
+    <button class="cat-arrow" id="catNext" type="button" aria-label="Прокрутить категории вправо" title="Вперёд"><i data-lucide="chevron-right" style="width:17px;height:17px"></i></button>
   </div>
 
   <div class="glass rounded-2xl p-3 mt-3 fade-up">
@@ -212,7 +226,15 @@ let canAtt=false,canSch=false,user=null;
 let tab='att', dayIdx=todayOff();
 const tpl=o=>WEEK[((o%7)+7)%7];
 function dayInfo(o){const t=tpl(o)||BASE[((o%7)+7)%7],dt=dayDate(o);return{wd:t.wd,s:t.s,day:dt.getDate(),mon:MONTHS[dt.getMonth()],lessons:t.lessons||[]}}
-$$('.tab').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;$$('.tab').forEach(x=>x.classList.toggle('on',x===b));render()}));
+const categoryScroll=$('#categoryScroll');
+function updateCategoryArrows(){if(!categoryScroll)return;const max=categoryScroll.scrollWidth-categoryScroll.clientWidth;$('#catPrev').disabled=categoryScroll.scrollLeft<=2;$('#catNext').disabled=categoryScroll.scrollLeft>=max-2;}
+$('#catPrev').addEventListener('click',()=>categoryScroll.scrollBy({left:-Math.max(220,categoryScroll.clientWidth*.7),behavior:'smooth'}));
+$('#catNext').addEventListener('click',()=>categoryScroll.scrollBy({left:Math.max(220,categoryScroll.clientWidth*.7),behavior:'smooth'}));
+categoryScroll.addEventListener('scroll',updateCategoryArrows,{passive:true});
+window.addEventListener('resize',updateCategoryArrows);
+categoryScroll.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){categoryScroll.scrollBy({left:180,behavior:'smooth'});e.preventDefault()}if(e.key==='ArrowLeft'){categoryScroll.scrollBy({left:-180,behavior:'smooth'});e.preventDefault()}});
+$$('.tab').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.t;$$('.tab').forEach(x=>x.classList.toggle('on',x===b));b.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});updateCategoryArrows();render()}));
+requestAnimationFrame(updateCategoryArrows);
 function renderDayPick(){
   const base=Math.floor(dayIdx/7)*7, t=todayOff();
   let h=`<button class="day-cell" data-wk="-1" aria-label="Предыдущая неделя"><div class="text-[15px] font-bold mt-2.5">‹</div></button>`;
