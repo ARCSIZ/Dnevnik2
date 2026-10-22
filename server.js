@@ -564,7 +564,12 @@ async function handleApi(req, res, url) {
     const group = DB.groups.find(g => g.id === user.group || g.name === user.group);
     const grades = staff ? DB.grades : Object.fromEntries(Object.entries(DB.grades).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
     const att = staff ? DB.att : Object.fromEntries(Object.entries(DB.att).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
-    return json(res, 200, { replacements: DB.replacements, grades, att, hw: DB.hw, sch: (Array.isArray(group?.schedule) && group.schedule.length === 7 ? group.schedule : (Array.isArray(DB.sch) && DB.sch.length === 7 ? DB.sch : DEFAULTS.sch)), ev: DB.ev, times: group?.times || DB.times, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students: staff ? DB.students : undefined, revision: DB.updatedAt || null });
+    // Compatibility: imports from the journal were saved to DB.sch. Prefer that published schedule
+    // when it contains lessons, otherwise use the user's group schedule.
+    const hasLessons = value => Array.isArray(value) && value.length === 7 && value.some(d => Array.isArray(d?.lessons) && d.lessons.length > 0);
+    const visibleSchedule = hasLessons(DB.sch) ? DB.sch : (Array.isArray(group?.schedule) && group.schedule.length === 7 ? group.schedule : DEFAULTS.sch);
+    const visibleTimes = hasLessons(DB.sch) ? (DB.times || group?.times || {}) : (group?.times || DB.times || {});
+    return json(res, 200, { replacements: DB.replacements, grades, att, hw: DB.hw, sch: visibleSchedule, ev: DB.ev, times: visibleTimes, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students: staff ? DB.students : undefined, revision: DB.updatedAt || null });
   }
   if (pathname.startsWith('/api/state/') && req.method === 'PUT') {
     const part = pathname.split('/')[3], user = requireAuth(req, res); if (!user) return;
@@ -645,7 +650,14 @@ async function handleApi(req, res, url) {
       times = sanitizeTimes({ ...DB.times, ...input.times });
     }
     const sch = sanitizeSchedule(input.sch, times);
-    DB.times = times; DB.sch = sch; scheduleChanged(user.login);
+    // Publishing an imported timetable updates the shared published copy and group snapshots,
+    // so accounts whose group still has a blank template see the newly published timetable too.
+    DB.times = times; DB.sch = sch;
+    if (Array.isArray(DB.groups)) for (const group of DB.groups) {
+      group.schedule = clone(sch);
+      group.times = clone(times);
+    }
+    scheduleChanged(user.login);
     DB.updatedAt = new Date().toISOString(); saveDB();
     return json(res, 200, { ok: true, lessons: sch.reduce((sum, day) => sum + day.lessons.length, 0), revision: DB.updatedAt });
   }
