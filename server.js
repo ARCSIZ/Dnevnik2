@@ -45,6 +45,7 @@ const SESSION_TTL = 30 * 24 * 60 * 60 * 1000;
 const SESSION_RENEW_AFTER = 12 * 60 * 60 * 1000;
 const MAX_BODY = 1024 * 1024;
 const CLEAN_DB_VERSION = 3;
+const PROFILE_ONLY_VERSION = 4;
 /* Расписание «идёт само»: в базе хранится типовая неделя, а номер дня в ключах
    оценок/посещаемости/ДЗ/мероприятий — число дней от даты старта (0 = первый понедельник).
    Дату старта можно сменить переменной SCHEDULE_START=ГГГГ-ММ-ДД (приводится к понедельнику). */
@@ -142,6 +143,23 @@ function readDB() {
   // После записи version=3 последующие перезапуски больше не сбрасывают базу.
   if (Number(DB.version || 0) < CLEAN_DB_VERSION) DB = clone(DEFAULTS);
   for (const [key, value] of Object.entries(DEFAULTS)) if (DB[key] === undefined) DB[key] = clone(value);
+  // One-time migration: retain profiles and group membership, clear old academic data.
+  // Works even when a persistent Docker volume contains the previous database.
+  if (Number(DB.version || 0) < PROFILE_ONLY_VERSION) {
+    DB.sch = createBlankWeek();
+    DB.times = {};
+    DB.grades = {};
+    DB.att = {};
+    DB.hw = {};
+    DB.ev = {};
+    DB.replacements = {};
+    if (Array.isArray(DB.groups)) for (const group of DB.groups) {
+      group.schedule = createBlankWeek();
+      group.times = {};
+    }
+    DB.version = PROFILE_ONLY_VERSION;
+    console.log('Профили сохранены; расписание, оценки, посещаемость и задания очищены');
+  }
   if (!Array.isArray(DB.accounts)) DB.accounts = [];
   if (!Array.isArray(DB.groups)) DB.groups = clone(DEFAULTS.groups);
   if (!DB.groups.length) DB.groups = clone(DEFAULTS.groups);
@@ -604,8 +622,10 @@ async function handleApi(req, res, url) {
     const day = Number(input.day), pair = Number(input.pair);
     if (!Number.isInteger(day) || day < 0 || day > MAX_DAY || !Number.isInteger(pair) || pair < 1 || pair > 12)
       return json(res,400,{ok:false,error:'Неверный день или номер пары'});
-    const group = user.role === 'dev' ? safeText(input.group,80) : user.group;
-    if (!DB.groups.some(g => g.id === group)) return json(res,400,{ok:false,error:'Группа не найдена'});
+    const requestedGroup = safeText(input.group,80);
+    const groupRecord = DB.groups.find(g => g.id === (user.role === 'dev' ? requestedGroup : user.group) || g.name === (user.role === 'dev' ? requestedGroup : user.group));
+    if (!groupRecord) return json(res,400,{ok:false,error:'Группа не найдена: проверьте группу учётной записи'});
+    const group = groupRecord.id;
     const status = safeText(input.status,30);
     if (!['','Возможна замена','Замена'].includes(status)) return json(res,400,{ok:false,error:'Неверная пометка'});
     const subject = safeText(input.subject,180);
