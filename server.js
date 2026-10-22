@@ -87,7 +87,7 @@ const DEFAULTS = {
   sessions: {},
   students: [],
   times: {},
-  grades: {}, att: {}, hw: {},
+  grades: {}, gradeComments: {}, att: {}, hw: {},
   ev: {},
   replacements: {},
   sch: createBlankWeek(),
@@ -457,7 +457,7 @@ function changedKeys(before, after) {
 }
 function parseRecordKey(key, withStudent) {
   const parts = String(key).split(':').map(Number);
-  if (parts.some(n => !Number.isInteger(n))) return null;
+  if (parts.some(n => !Number.isInteger(n)) || parts.length < (withStudent ? 3 : 2) || parts.length > (withStudent ? 4 : 2) || (parts.length===4 && (parts[3]<1 || parts[3]>3))) return null;
   if (parts[0] < 0 || parts[0] > MAX_DAY || parts[1] < 1 || (withStudent && parts[2] < 0)) return null;
   return { day: parts[0], pair: parts[1], student: withStudent ? parts[2] : null };
 }
@@ -569,7 +569,8 @@ async function handleApi(req, res, url) {
     const hasLessons = value => Array.isArray(value) && value.length === 7 && value.some(d => Array.isArray(d?.lessons) && d.lessons.length > 0);
     const visibleSchedule = hasLessons(DB.sch) ? DB.sch : (Array.isArray(group?.schedule) && group.schedule.length === 7 ? group.schedule : DEFAULTS.sch);
     const visibleTimes = hasLessons(DB.sch) ? (DB.times || group?.times || {}) : (group?.times || DB.times || {});
-    return json(res, 200, { replacements: DB.replacements, grades, att, hw: DB.hw, sch: visibleSchedule, ev: DB.ev, times: visibleTimes, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students: staff ? DB.students : undefined, revision: DB.updatedAt || null });
+    const gradeComments = staff ? (DB.gradeComments || {}) : Object.fromEntries(Object.entries(DB.gradeComments || {}).filter(([key]) => Number(key.split(':')[2]) === user.studentIndex));
+    return json(res, 200, { replacements: DB.replacements, grades, gradeComments, att, hw: DB.hw, sch: visibleSchedule, ev: DB.ev, times: visibleTimes, groupInfo: group ? { name: group.name, specialty: group.specialty, course: group.course, curatorLogin: group.curatorLogin, starostaLogin: group.starostaLogin } : null, start: SCHEDULE_START_ISO, students: staff ? DB.students : undefined, revision: DB.updatedAt || null });
   }
   if (pathname.startsWith('/api/state/') && req.method === 'PUT') {
     const part = pathname.split('/')[3], user = requireAuth(req, res); if (!user) return;
@@ -593,6 +594,10 @@ async function handleApi(req, res, url) {
         if (user.role !== 'dev' && (!teacherOwns(user, record.day, record.pair) || record.day !== todayOffset() || currentPair() !== record.pair)) return json(res, 403, { ok: false, error: 'Оценки доступны только на своей текущей паре' });
       }
       const prevGrades = DB.grades; DB.grades = input; gradesChanged(prevGrades, input, user);
+    } else if (part === 'gradeComments') {
+      if (!can(user, 'grades') || !validStateObject(input)) return json(res, 403, { ok: false, error: 'Нет права менять комментарии к оценкам' });
+      const next = {}; for (const [key, value] of Object.entries(input)) { if (!/^\d+:\d+:\d+(?::[1-3])?$/.test(key) || (value != null && typeof value !== 'string')) return json(res, 400, {ok:false,error:'Некорректный комментарий'}); if (String(value||'').trim()) next[key] = safeText(value,1000); }
+      DB.gradeComments = next;
     } else if (part === 'att') {
       if (!validStateObject(input) || (!can(user, 'attendance') && !can(user, 'ownAttendance'))) return json(res, 403, { ok: false, error: 'Нет права менять посещаемость' });
       for (const key of changedKeys(DB.att, input)) {
